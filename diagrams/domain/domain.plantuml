@@ -1,0 +1,49 @@
+'Контекстная карта "Кинобездна" (DDD)
+
+@startuml
+
+!include ../templates/C4.puml
+!include ../templates/C4_Context.puml
+!include ../templates/C4_Context.puml
+!include ../templates/C4_Container.puml
+
+Title "Контекстная карта 'Кинобездна' (DDD)"
+
+Enterprise_Boundary(cinema, "Домен: Кинобездна") {
+    Boundary(users, "Поддомен: Пользователи") {
+        Container(registration, "Контекст: Регистрация/дерегистрация", "учетные записи")
+        Container(auth, "Контекст: Авторизация", "способы авторизации, токены, логины, пароли")
+    }
+    Boundary(content, "Поддомен: Контент") {
+     Container(choice, "Контекст: Выбор контента", "каталоги, поиск, рекомендации, рейтинги, история просмотров")
+     Container(meta, "Контекст: Метаданные", "актеры, режиссеры, жанры, страны")
+     Container(marks, "Контекст: Оценки", "оценки, избранное")
+    }
+    Boundary(integrations, "Поддомен: Интеграции") {
+     Container(sources, "Контекст: Источники", "контент, поставщики, подписки")
+     Container(loyalty, "Контекст: Сервисы лояльности", "скидки, бонусы")
+     Container(markets, "Контекст: Маркетплейсы", "покупки")
+     Container(payments, "Контекст: Платежные системы", "платежи")
+    }
+    Boundary(device, "Поддомен: Устройства") {
+     Container(ui, "Контекст: Интерфейс пользователя", "плееры, стили, меню")
+     Container(hardware, "Контекст: Устройства", "мобильные устройства, ноутбуки, смарт ТВ")
+    }
+}
+
+Rel(users, ui, "использует")
+
+Rel(choice, ui, "определяет контент")
+Rel(choice, sources, "получает каталоги и рейтинги")
+Rel_Up(choice, meta, "получает метаданные, ищет по метаданным")
+Rel_Up(choice, marks, "использует для рекомендаций")
+
+Rel(ui, sources, "получает данные")
+Rel_Right(ui, hardware, "управляет")
+
+Rel_Right(markets, payments, "инициирует покупки")
+Rel_Right(loyalty, payments, "участвует в покупках")
+
+Rel_Up(payments, sources, "регистрирует покупки")
+
+@enduml

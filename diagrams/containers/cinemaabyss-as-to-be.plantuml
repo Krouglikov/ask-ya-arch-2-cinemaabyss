@@ -1,0 +1,64 @@
+' Диаграмма контейнеров (С4) AS-TO-BE
+
+@startuml
+
+!include ../templates/C4.puml
+!include ../templates/C4_Context.puml
+!include ../templates/C4_Container.puml
+!include ../templates/C4_Component.puml
+
+Title Диаграмма контейнеров 'Кинобездна' AS-TO-BE
+
+System_Boundary(cinemaAbyss, "Система 'Кинобездна'") {
+    Container(gateway, "Сервис шлюза", "")
+    ContainerQueue(queues, "Очереди", "")
+
+    Container(users, "Сервис управления пользователями", "регистрация/дерегистрация, авторизация, смена пароля, восстановление пароля")
+    ContainerDb(usersDb, "БД пользователей", "учетные записи")
+
+    Container(content, "Сервис контента", "выбор контента, метаданные, оценки, избранное")
+    ContainerDb(contentDb, "БД контента", "")
+
+    Container(integrations, "Сервис интеграций", "источники, сервисы лояльности, маркетплейсы, платежные системы")
+    ContainerDb(integrationsDb, "БД интеграций", "")
+
+    Boundary(ui, "Интерфейс пользователя") {
+        Container(mobile, "Мобильное приложение")
+        Container(browser, "Браузерное приложение")
+        Container(smarttv, "Приложение Smart TV")
+    }
+}
+Person(user, "Пользователь", "Ноутбуки, смарт-ТВ, мобильные устройства")
+
+System_Ext(payments, "Платежная система")
+System_Ext(cinemas, "Онлайн-кинотеатры")
+System_Ext(recommendation, "Рекомендательная система")
+System_Ext(S3, "S3")
+System_Ext(other, "Другие сервисы", "Сервисы лояльности, маркетплейсы и проч.")
+
+Rel(user, ui, "покупает подписки, выбирает, просматривает и оценивает фильм, составляет список избранного")
+
+' API gateway
+Rel(ui, gateway, "[REST]")
+Rel(gateway, users, "авторизация и регистрация [REST]")
+Rel(gateway, content, "выбор контента, оценка, формирование избранного [REST]")
+Rel(gateway, integrations, "просмотр контента, покупки [REST]")
+
+' Связи с внешними системами
+Rel(queues, cinemas, "запрашивает данные [Kafka]")
+Rel(queues, recommendation, "[Kafka, RabbitMQ, etc.]")
+Rel(queues, other, "[Kafka, RabbitMQ, etc.]")
+Rel(queues, payments, "[Kafka, RabbitMQ, etc.]")
+Rel(content, S3, "хранит данные [HTTP]")
+
+' Связи между сервисами
+Rel(content, queues, "")
+Rel(users, queues, "")
+Rel(integrations, queues, "")
+
+' Связи с БД
+Rel(users, usersDb, "")
+Rel(content, contentDb, "")
+Rel(integrations, integrationsDb, "")
+
+@enduml

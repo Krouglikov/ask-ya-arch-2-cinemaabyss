@@ -1,0 +1,38 @@
+' Диаграмма контейнеров (С4) AS-IS
+
+@startuml
+
+!include ../templates/C4.puml
+!include ../templates/C4_Context.puml
+!include ../templates/C4_Container.puml
+!include ../templates/C4_Component.puml
+
+Title Диаграмма контейнеров 'Кинобездна' AS-IS
+
+System_Boundary(cinemaAbyss, "Система 'Кинобездна'") {
+    Container(monolyth, "Система 'Кинобездна'", "Монолит на Go")
+    Boundary(ui, "Интерфейс пользователя") {
+        Container(mobile, "Мобильное приложение")
+        Container(browser, "Браузерное приложение")
+        Container(smarttv, "Приложение Smart TV")
+    }
+    ContainerDb(db, "БД", "PostgreSQL")
+    ContainerQueue(queue, "Очередь")
+}
+Person(user, "Пользователь", "Ноутбуки, смарт-ТВ, мобильные устройства")
+
+System_Ext(payments, "Платежная система")
+System_Ext(cinemas, "Онлайн-кинотеатры")
+System_Ext(recommendation, "Рекомендательная система")
+System_Ext(S3, "S3")
+
+Rel(user, ui, "покупает подписки, выбирает, просматривает и оценивает фильм, составляет список избранного")
+BiRel(ui, monolyth, "")
+Rel(monolyth, payments, "выставляет платёжные документы")
+Rel(monolyth, cinemas, "запрашивает данные")
+Rel(monolyth, S3, "хранит данные")
+Rel(monolyth, db, "хранит данные")
+BiRel(monolyth, queue, "")
+BiRel(queue, recommendation, "")
+
+@enduml
