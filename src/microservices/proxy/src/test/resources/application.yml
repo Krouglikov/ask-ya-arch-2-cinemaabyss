@@ -1,0 +1,19 @@
+server:
+  port: 8000
+
+monolith:
+  url: //monolith:8080
+
+movies:
+  service:
+    url: http://movies-service:8081
+  migration:
+    percent: 50
+
+events:
+  service:
+    url: http://events-service:8082
+
+gradual:
+  migration: true
+
