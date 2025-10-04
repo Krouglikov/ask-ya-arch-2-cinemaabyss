@@ -15,7 +15,7 @@ services:
       - postgres-data:/var/lib/postgresql/data
       - ./src/database/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -85,21 +85,23 @@ services:
       - cinemaabyss-network
 
   # Events Microservice
-#  events-service:
-#    build:
-#      context: ./src/microservices/events
-#      dockerfile: Dockerfile
-#    container_name: cinemaabyss-events-service
-#    depends_on:
-#      - postgres
-#      - kafka
-#    ports:
-#      - "8082:8082"
-#    environment:
-#      PORT: 8082
-#      KAFKA_BROKERS: kafka:9092
-#    networks:
-#      - cinemaabyss-network
+  events-service:
+    build:
+      context: ./src/microservices/events
+      dockerfile: Dockerfile
+    container_name: cinemaabyss-events-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    ports:
+      - "8082:8082"
+    environment:
+      PORT: 8082
+      KAFKA_BROKERS: kafka:9092
+    networks:
+      - cinemaabyss-network
 
   # Proxy Service (API Gateway)
   proxy-service:
@@ -110,7 +112,7 @@ services:
     depends_on:
       - monolith
       - movies-service
-#      - events-service
+      - events-service
     ports:
       - "8000:8000"
     environment:
@@ -135,6 +137,19 @@ services:
       KAFKA_CLUSTERS_0_NAME: cinemaabyss
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
       KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    networks:
+      - cinemaabyss-network
+
+  tests:
+    build:
+      context: ./tests/postman
+      dockerfile: Dockerfile
+    container_name: cinemaabyss-tests
+    depends_on:
+      - proxy-service
+      - monolith
+      - movies-service
+      - events-service
     networks:
       - cinemaabyss-network
 
