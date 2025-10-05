@@ -90,10 +90,13 @@ yaml
 
 ### CI/CD
 
- В папке .github/worflows доработайте деплой новых сервисов proxy и events в docker-build-push.yml , чтобы api-tests при сборке отрабатывали корректно при отправке коммита в вашу новую ветку.
+Выполнено
+
+``` 
+В папке .github/worflows доработайте деплой новых сервисов proxy и events в docker-build-push.yml , чтобы api-tests при сборке отрабатывали корректно при отправке коммита в вашу новую ветку.
 
 Нужно доработать 
-```yaml
+yaml
 on:
   push:
     branches: [ main ]
@@ -102,9 +105,9 @@ on:
       - '.github/workflows/docker-build-push.yml'
   release:
     types: [published]
-```
+
 и добавить необходимые шаги в блок
-```yaml
+yaml
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -126,10 +129,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-```
 Как только сборка отработает и в github registry появятся ваши образы, можно переходить к блоку настройки Kubernetes
 Успешным результатом данного шага является "зеленая" сборка и "зеленые" тесты
-
+```
 
 ### Proxy в Kubernetes
 
