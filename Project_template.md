@@ -135,23 +135,26 @@ jobs:
 
 ### Proxy в Kubernetes
 
+Выполнено
+
+```
 #### Шаг 1
 Для деплоя в kubernetes необходимо залогиниться в docker registry Github'а.
 1. Создайте Personal Access Token (PAT) https://github.com/settings/tokens . Создавайте class с правом read:packages
 2. В src/kubernetes/*.yaml (event-service, monolith, movies-service и proxy-service)  отредактируйте путь до ваших образов 
-```bash
+bash
  spec:
       containers:
       - name: events-service
         image: ghcr.io/ваш логин/имя репозитория/events-service:latest
-```
+
 3. Добавьте в секрет src/kubernetes/dockerconfigsecret.yaml в поле
-```bash
+bash
  .dockerconfigjson: значение в base64 файла ~/.docker/config.json
-```
+
 
 4. Если в ~/.docker/config.json нет значения для аутентификации
-```json
+json
 {
         "auths": {
                 "ghcr.io": {
@@ -159,31 +162,31 @@ jobs:
                 }
         }
 }
-```
+
 то выполните 
 
 и добавьте
 
-```json 
+json 
  "auth": "имя пользователя:токен в base64"
-```
+
 
 Чтобы получить значение в base64 можно выполнить команду
-```bash
+bash
  echo -n ваш_логин:ваш_токен | base64
-```
+
 
 После заполнения config.json, также прогоните содержимое через base64
 
-```bash
+bash
 cat .docker/config.json | base64
-```
+
 
 и полученное значение добавляем в
 
-```bash
+bash
  .dockerconfigjson: значение в base64 файла ~/.docker/config.json
-```
+
 
 #### Шаг 2
 
@@ -194,59 +197,59 @@ cat .docker/config.json | base64
   - Выполните дальшейшие шаги для поднятия кластера:
 
   1. Создайте namespace:
-  ```bash
+  bash
   kubectl apply -f src/kubernetes/namespace.yaml
-  ```
+  
   2. Создайте секреты и переменные
-  ```bash
+  bash
   kubectl apply -f src/kubernetes/configmap.yaml
   kubectl apply -f src/kubernetes/secret.yaml
   kubectl apply -f src/kubernetes/dockerconfigsecret.yaml
   kubectl apply -f src/kubernetes/postgres-init-configmap.yaml
-  ```
+  
 
   3. Разверните базу данных:
-  ```bash
+  bash
   kubectl apply -f src/kubernetes/postgres.yaml
-  ```
+  
 
   На этом этапе если вызвать команду
-  ```bash
+  bash
   kubectl -n cinemaabyss get pod
-  ```
+  
   Вы увидите
 
   NAME         READY   STATUS    
   postgres-0   1/1     Running   
 
   4. Разверните Kafka:
-  ```bash
+  bash
   kubectl apply -f src/kubernetes/kafka/kafka.yaml
-  ```
+  
 
   Проверьте, теперь должно быть запущено 3 пода, если что-то не так, то посмотрите логи
-  ```bash
+  bash
   kubectl -n cinemaabyss logs имя_пода (например - kafka-0)
-  ```
+  
 
   5. Разверните монолит:
-  ```bash
+  bash
   kubectl apply -f src/kubernetes/monolith.yaml
-  ```
+  
   6. Разверните микросервисы:
-  ```bash
+  bash
   kubectl apply -f src/kubernetes/movies-service.yaml
   kubectl apply -f src/kubernetes/events-service.yaml
-  ```
+  
   7. Разверните прокси-сервис:
-  ```bash
+  bash
   kubectl apply -f src/kubernetes/proxy-service.yaml
-  ```
+  
 
   После запуска и поднятия подов вывод команды 
-  ```bash
+  bash
   kubectl -n cinemaabyss get pod
-  ```
+  
 
   Будет наподобие такого
 
@@ -269,32 +272,43 @@ cat .docker/config.json | base64
   8. Добавим ingress
 
   - добавьте аддон
-  ```bash
+  bash
   minikube addons enable ingress
-  ```
-  ```bash
+  
+  
+  bash
   kubectl apply -f src/kubernetes/ingress.yaml
-  ```
+  
+  
   9. Добавьте в /etc/hosts
   127.0.0.1 cinemaabyss.example.com
 
   10. Вызовите
-  ```bash
+  bash
   minikube tunnel
-  ```
+  
   11. Вызовите https://cinemaabyss.example.com/api/movies
   Вы должны увидеть вывод списка фильмов
   Можно поэкспериментировать со значением   MOVIES_MIGRATION_PERCENT в src/kubernetes/configmap.yaml и убедится, что вызовы movies уходят полностью в новый сервис
 
   12. Запустите тесты из папки tests/postman
-  ```bash
+  bash
    npm run test:kubernetes
-  ```
+  
   Часть тестов с health-чек упадет, но создание событий отработает.
   Откройте логи event-service и сделайте скриншот обработки событий
 
 #### Шаг 3
 Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
+```
+
+Скриншот вывода в браузер
+
+![task3-2-browser-output.PNG](images/task3-2-browser-output.PNG)
+
+Скриншот логов event-service после прохождения тестов
+
+![task3-2-k8s-tests.PNG](images/task3-2-k8s-tests.PNG)
 
 
 ## Задание 4
