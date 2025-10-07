@@ -396,9 +396,13 @@ https://cinemaabyss.example.com/api/movies
 ![task-4-movies-output.PNG](images/task-4-movies-output.PNG)
 
 # Задание 5
+
+Выполнено
+
+```
 Компания планирует активно развиваться и для повышения надежности, безопасности, реализации сетевых паттернов типа Circuit Breaker и канареечного деплоя вам как архитектору необходимо развернуть istio и настроить circuit breaker для monolith и movies сервисов.
 
-```bash
+bash
 
 helm repo add istio https://istio-release.storage.googleapis.com/charts
 helm repo update
@@ -415,55 +419,67 @@ kubectl get namespace -L istio-injection
 
 kubectl apply -f .\src\kubernetes\circuit-breaker-config.yaml -n cinemaabyss
 
-```
+
 
 Тестирование
 
 # fortio
-```bash
+bash
 kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.25/samples/httpbin/sample-client/fortio-deploy.yaml -n cinemaabyss
-```
+
 
 # Get the fortio pod name
-```bash
+bash
 FORTIO_POD=$(kubectl get pod -n cinemaabyss | grep fortio | awk '{print $1}')
 
 kubectl exec -n cinemaabyss $FORTIO_POD -c fortio -- fortio load -c 50 -qps 0 -n 500 -loglevel Warning http://movies-service:8081/api/movies
-```
+
 Например,
 
-```bash
+bash
 kubectl exec -n cinemaabyss fortio-deploy-b6757cbbb-7c9qg  -c fortio -- fortio load -c 50 -qps 0 -n 500 -loglevel Warning http://movies-service:8081/api/movies
-```
+
 
 Вывод будет типа такого
 
-```bash
+bash
 IP addresses distribution:
 10.106.113.46:8081: 421
 Code 200 : 79 (15.8 %)
 Code 500 : 22 (4.4 %)
 Code 503 : 399 (79.8 %)
-```
+
 Можно еще проверить статистику
 
-```bash
+bash
 kubectl exec -n cinemaabyss fortio-deploy-b6757cbbb-7c9qg -c istio-proxy -- pilot-agent request GET stats | grep movies-service | grep pending
-```
+
 
 И там смотрим 
 
-```bash
+bash
 cluster.outbound|8081||movies-service.cinemaabyss.svc.cluster.local;.upstream_rq_pending_total: 311 - столько раз срабатывал circuit breaker
 You can see 21 for the upstream_rq_pending_overflow value which means 21 calls so far have been flagged for circuit breaking.
-```
+
 
 Приложите скриншот работы circuit breaker'а
 
 Удаляем все
-```bash
+bash
 istioctl uninstall --purge
 kubectl delete namespace istio-system
 kubectl delete all --all -n cinemaabyss
 kubectl delete namespace cinemaabyss
 ```
+
+Скриншот теста fortio до введения circuit-breaker-а
+
+![task-5-task-5-before.PNG](images/task-5-before.PNG)
+
+Скриншот теста fortio для сервиса monolith после введения circuit-breaker-а
+
+![task-5-monolith-after.PNG](images/task-5-monolith-after.PNG)
+
+Скриншот теста fortio для сервиса movies-service после введения circuit-breaker-а
+
+![task-5-movies-service-after.PNG](images/task-5-movies-service-after.PNG)
