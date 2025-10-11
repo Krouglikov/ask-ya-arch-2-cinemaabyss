@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8000}
+
+monolith:
+  url: ${MONOLITH_URL:http://monolith:8080}
+
+movies:
+  service:
+    url: ${MOVIES_SERVICE_URL:http://movies-service:8081}
+  migration:
+    percent: ${MOVIES_MIGRATION_PERCENT:50}
+
+events:
+  service:
+    url: ${EVENTS_SERVICE_URL:http://events-service:8082}
+
+users:
+  service:
+    url: ${USERS_SERVICE_URL:http://users-service:8083}
+  migration:
+    percent: ${USERS_MIGRATION_PERCENT:0}
+
+gradual:
+  migration: ${GRADUAL_MIGRATION:true}
+

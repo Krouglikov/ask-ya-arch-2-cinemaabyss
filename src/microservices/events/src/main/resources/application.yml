@@ -1,0 +1,30 @@
+server:
+  port: ${PORT:8080}
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BROKERS:host.docker.internal:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      topics:
+        - movie-events
+        - user-events
+        - payment-events
+      properties:
+        spring.json.type.inclusion: HEADERS  # или WRAPPER
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      group-id: events-group
+      topics:
+        - movie-events
+        - user-events
+        - payment-events
+      auto-offset-reset: earliest
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: ask.example.yandex.architecture.sprint2.events.model
+
+logging:
+  level:
+    org.springframework.kafka.support.serializer.JsonDeserializer: DEBUG
